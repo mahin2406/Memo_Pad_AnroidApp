@@ -1,23 +1,27 @@
-package edu.jsu.mcis.cs408.memo_pad;
+package edu.jsu.mcis.cs408.memo_pad.model;
 
 public class Memo {
 
-    private int id;
+    private Integer id;
     private String memo;
 
     public Memo() {
     }
 
-    public Memo(int id, String memo) {
+    public Memo(String memo) {
+        this.memo = memo;
+    }
+
+    public Memo(Integer id, String memo) {
         this.id = id;
         this.memo = memo;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -28,5 +32,4 @@ public class Memo {
     public void setMemo(String memo) {
         this.memo = memo;
     }
-
 }

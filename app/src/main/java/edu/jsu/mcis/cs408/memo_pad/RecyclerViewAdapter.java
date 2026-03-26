@@ -10,12 +10,16 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-public class MemoRecyclerViewAdapter extends RecyclerView.Adapter<MemoRecyclerViewAdapter.ViewHolder> {
+import edu.jsu.mcis.cs408.memo_pad.model.Memo;
 
-    private List<Memo> memoList;
+public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
 
-    public MemoRecyclerViewAdapter(List<Memo> memoList) {
-        this.memoList = memoList;
+    private final List<Memo> data;
+    private final MainActivity activity;
+
+    public RecyclerViewAdapter(MainActivity activity, List<Memo> data) {
+        this.activity = activity;
+        this.data = data;
     }
 
     @NonNull
@@ -23,18 +27,25 @@ public class MemoRecyclerViewAdapter extends RecyclerView.Adapter<MemoRecyclerVi
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.memo_item, parent, false);
+
+        view.setOnClickListener(activity.getItemClick());
+
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Memo memo = memoList.get(position);
+        Memo memo = data.get(position);
         holder.textViewMemoItem.setText("#" + memo.getId() + ": " + memo.getMemo());
     }
 
     @Override
     public int getItemCount() {
-        return memoList.size();
+        return data.size();
+    }
+
+    public Memo getItem(int position) {
+        return data.get(position);
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

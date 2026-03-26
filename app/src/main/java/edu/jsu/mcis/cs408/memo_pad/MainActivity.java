@@ -1,8 +1,10 @@
 package edu.jsu.mcis.cs408.memo_pad;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,7 +14,9 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.List;
+import edu.jsu.mcis.cs408.memo_pad.controller.MemoPadController;
+import edu.jsu.mcis.cs408.memo_pad.model.Memo;
+import edu.jsu.mcis.cs408.memo_pad.model.MemoPadModel;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -21,9 +25,14 @@ public class MainActivity extends AppCompatActivity {
     private Button buttonDeleteMemo;
     private RecyclerView recyclerViewMemos;
 
-    private MemoDatabaseHandler dbHandler;
-    private MemoRecyclerViewAdapter adapter;
-    private List<Memo> memoList;
+    private MemoPadController controller;
+    private Integer selectedMemoId = null;
+
+    private final MemoPadItemClickHandler itemClick = new MemoPadItemClickHandler();
+
+    public MemoPadItemClickHandler getItemClick() {
+        return itemClick;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,38 +51,54 @@ public class MainActivity extends AppCompatActivity {
         buttonDeleteMemo = findViewById(R.id.buttonDeleteMemo);
         recyclerViewMemos = findViewById(R.id.recyclerViewMemos);
 
-        dbHandler = new MemoDatabaseHandler(this);
+        controller = new MemoPadController(new MemoPadModel(this));
 
         recyclerViewMemos.setLayoutManager(new LinearLayoutManager(this));
 
-        memoList = dbHandler.getAllMemosAsList();
-        adapter = new MemoRecyclerViewAdapter(memoList);
-        recyclerViewMemos.setAdapter(adapter);
+        updateRecyclerView();
 
         buttonAddMemo.setOnClickListener(v -> {
             String memoText = editTextMemo.getText().toString().trim();
 
             if (!memoText.isEmpty()) {
-                Memo memo = new Memo();
-                memo.setMemo(memoText);
-
-                dbHandler.addMemo(memo);
-
+                controller.createMemo(memoText);
                 editTextMemo.setText("");
-
+                selectedMemoId = null;
                 updateRecyclerView();
+            } else {
+                Toast.makeText(this, "Enter a memo", Toast.LENGTH_SHORT).show();
             }
         });
 
         buttonDeleteMemo.setOnClickListener(v -> {
-            // Leave this empty for now if this is still Lab 4A.
-            // Delete functionality can be added in Lab 4B.
+            if (selectedMemoId != null) {
+                controller.deleteMemo(selectedMemoId);
+                selectedMemoId = null;
+                updateRecyclerView();
+            } else {
+                Toast.makeText(this, "Select a memo first", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
     private void updateRecyclerView() {
-        memoList = dbHandler.getAllMemosAsList();
-        adapter = new MemoRecyclerViewAdapter(memoList);
+        RecyclerViewAdapter adapter = new RecyclerViewAdapter(this, controller.listMemos());
         recyclerViewMemos.setAdapter(adapter);
+    }
+
+    public class MemoPadItemClickHandler implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            int position = recyclerViewMemos.getChildLayoutPosition(v);
+            RecyclerViewAdapter adapter = (RecyclerViewAdapter) recyclerViewMemos.getAdapter();
+
+            if (adapter != null && position != RecyclerView.NO_POSITION) {
+                Memo memo = adapter.getItem(position);
+                selectedMemoId = memo.getId();
+                Toast.makeText(v.getContext(),
+                        "Selected memo ID: " + selectedMemoId,
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }
